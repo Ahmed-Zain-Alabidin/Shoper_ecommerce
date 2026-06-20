@@ -1,0 +1,150 @@
+<div class="min-h-screen bg-[#FCFDFF]">
+  <app-navbar />
+
+  <!-- Hero -->
+  <section class="py-20 sm:py-28 lg:py-36 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1
+        class="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-gray-900 mb-6 leading-tight"
+      >
+        Elevating Your Daily Essentials
+      </h1>
+      <p
+        class="text-lg sm:text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto"
+      >
+        Shoper was built to provide a premium and seamless shopping experience
+        for the Egyptian market. We believe that every purchase should be
+        effortless, every product should be exceptional, and every customer
+        should feel valued.
+      </p>
+    </div>
+  </section>
+
+  <!-- Our Story -->
+  <section class="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white">
+    <div class="max-w-7xl mx-auto">
+      <div
+        class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+      >
+        <div
+          class="relative h-[400px] sm:h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl"
+        >
+          <img
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80"
+            alt="Modern Shopping Experience"
+            class="w-full h-full object-cover"
+          />
+        </div>
+        <div class="space-y-6">
+          <h2
+            class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-gray-900"
+          >
+            The Shoper Journey
+          </h2>
+          <div
+            class="space-y-4 text-gray-700 text-base sm:text-lg leading-relaxed"
+          >
+            <p>
+              Born from a passion for quality and innovation, Shoper emerged as
+              Egypt's answer to modern e-commerce. We saw a gap — a need for a
+              platform that doesn't just sell products, but curates experiences.
+            </p>
+            <p>
+              Every item in our catalog is carefully selected to meet our
+              rigorous standards — from cutting-edge electronics to timeless
+              fashion and essential home goods.
+            </p>
+            <p>
+              Our mission: make premium shopping accessible, reliable, and
+              delightful for every Egyptian household.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Values -->
+  <section class="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2
+          class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-4"
+        >
+          Our Core Values
+        </h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          The principles that guide everything we do at Shoper
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+        @for (value of coreValues; track value.title) {
+          <div class="text-center space-y-4">
+            <div
+              class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#155dfc] to-[#8b5cf6] text-white mb-4"
+            >
+              <span class="text-2xl">{{ value.icon }}</span>
+            </div>
+            <h3 class="text-2xl font-serif font-bold text-gray-900">
+              {{ value.title }}
+            </h3>
+            <p class="text-gray-700 leading-relaxed">{{ value.description }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Founder Quote -->
+  <section
+    class="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white"
+  >
+    <div class="max-w-4xl mx-auto">
+      <div
+        class="bg-white rounded-2xl shadow-xl p-8 sm:p-12 lg:p-16 border-l-4 border-[#155dfc]"
+      >
+        <div class="flex items-center gap-4 mb-6">
+          <div
+            class="w-16 h-16 rounded-full bg-gradient-to-br from-[#155dfc] to-[#8b5cf6] flex items-center justify-center text-white text-2xl font-bold"
+          >
+            AZ
+          </div>
+          <div>
+            <h3 class="text-2xl font-serif font-bold text-gray-900">
+              Abu Zain
+            </h3>
+            <p class="text-gray-600">Founder &amp; Visionary</p>
+          </div>
+        </div>
+        <blockquote
+          class="text-xl sm:text-2xl font-serif text-gray-800 leading-relaxed italic border-l-4 border-gray-200 pl-6"
+        >
+          "I built Shoper with one vision: to create a shopping destination
+          where quality meets convenience, and where every Egyptian can access
+          world-class products without compromise."
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 text-center">
+    <div class="max-w-3xl mx-auto space-y-8">
+      <h2 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900">
+        Ready to Experience the Difference?
+      </h2>
+      <p class="text-lg text-gray-700">
+        Join thousands of satisfied customers who trust Shoper for their daily
+        essentials.
+      </p>
+      <a
+        routerLink="/shop"
+        class="inline-block px-8 py-4 bg-gradient-to-r from-[#155dfc] to-[#8b5cf6] text-white text-lg font-bold rounded-full hover:shadow-2xl hover:scale-105 transition-all duration-300"
+      >
+        Start Shopping
+      </a>
+    </div>
+  </section>
+
+  <app-footer />
+</div>

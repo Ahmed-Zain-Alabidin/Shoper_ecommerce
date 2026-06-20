@@ -1,0 +1,91 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900">Overview</h1>
+      <p class="text-gray-500 mt-1 text-sm">Welcome back — here's your store at a glance.</p>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+      @for (card of [
+        { label: 'Total Revenue', value: formatRevenue(), icon: '💰', color: 'bg-emerald-50 text-emerald-600' },
+        { label: 'Total Orders', value: stats().orders, icon: '🛍️', color: 'bg-blue-50 text-blue-600' },
+        { label: 'Active Sellers', value: stats().sellers, icon: '🏪', color: 'bg-violet-50 text-violet-600' },
+        { label: 'Customers', value: stats().customers, icon: '👥', color: 'bg-orange-50 text-orange-600' }
+      ]; track card.label) {
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ card.label }}</p>
+            <div [class]="card.color + ' w-10 h-10 rounded-xl flex items-center justify-center text-xl'">{{ card.icon }}</div>
+          </div>
+          @if (isLoading()) {
+            <div class="h-9 w-28 bg-gray-100 rounded-lg animate-pulse"></div>
+          } @else {
+            <p class="text-3xl font-extrabold text-gray-900 tracking-tight">{{ card.value }}</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      @for (link of quickLinks; track link.href) {
+        <a [routerLink]="link.href"
+          class="bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-3 hover:border-gray-300 hover:shadow-sm transition-all">
+          <div [class]="link.color + ' w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg'">{{ link.icon }}</div>
+          <span class="text-sm font-semibold text-gray-700 leading-tight">{{ link.label }}</span>
+          <span class="ml-auto text-gray-300">›</span>
+        </a>
+      }
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h2 class="text-base font-extrabold text-gray-900">Recent Orders</h2>
+        <a routerLink="/admin/orders" class="text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors">View all ›</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              @for (h of ['Order ID', 'Customer', 'Total', 'Status', 'Date']; track h) {
+                <th class="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">{{ h }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @if (isLoading()) {
+              @for (i of [1,2,3,4,5]; track i) {
+                <tr>
+                  @for (j of [1,2,3,4,5]; track j) {
+                    <td class="px-6 py-4"><div class="h-4 bg-gray-100 rounded animate-pulse"></div></td>
+                  }
+                </tr>
+              }
+            } @else if (recentOrders().length === 0) {
+              <tr><td colspan="5" class="px-6 py-14 text-center text-gray-400 font-medium text-sm">No orders yet.</td></tr>
+            } @else {
+              @for (order of recentOrders(); track order._id) {
+                <tr class="hover:bg-gray-50/60 transition-colors">
+                  <td class="px-6 py-3.5 font-mono text-xs text-gray-400">#{{ order._id?.slice(-8).toUpperCase() }}</td>
+                  <td class="px-6 py-3.5">
+                    <p class="font-semibold text-gray-900 text-sm">{{ order.user?.name || '—' }}</p>
+                    <p class="text-xs text-gray-400">{{ order.user?.email }}</p>
+                  </td>
+                  <td class="px-6 py-3.5 font-bold text-gray-900">${{ order.totalPrice?.toFixed(2) }}</td>
+                  <td class="px-6 py-3.5">
+                    <span [class]="statusClass(order.status) + ' px-2.5 py-1 rounded-full text-xs font-bold capitalize'">{{ order.status }}</span>
+                  </td>
+                  <td class="px-6 py-3.5 text-gray-400 text-xs whitespace-nowrap">{{ formatDate(order.createdAt) }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <app-footer />
+</div>

@@ -1,0 +1,98 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-extrabold text-gray-900">All Products</h1>
+        <p class="text-gray-500 mt-1">{{ products().length }} products in total</p>
+      </div>
+      <a routerLink="/dashboard/products/add"
+        class="inline-flex items-center px-5 py-2.5 bg-black text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-colors shadow-sm">
+        + Add Product
+      </a>
+    </div>
+
+    <div class="relative mb-6">
+      <input type="text" [(ngModel)]="search" placeholder="Search products by name..."
+        class="w-full pl-4 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black transition-all placeholder-gray-400 shadow-sm" />
+    </div>
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100">
+              @for (h of ['Product','Category','Price','Stock','Actions']; track h) {
+                <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">{{ h }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @if (isLoading()) {
+              @for (i of [1,2,3,4,5]; track i) {
+                <tr>@for (j of [1,2,3,4,5]; track j) {<td class="px-6 py-4"><div class="h-4 bg-gray-100 rounded animate-pulse"></div></td>}</tr>
+              }
+            } @else if (filtered().length === 0) {
+              <tr><td colspan="5" class="px-6 py-20 text-center text-gray-400 font-semibold">No products found.</td></tr>
+            } @else {
+              @for (p of filtered(); track p._id) {
+                <tr class="hover:bg-gray-50/70 transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-11 h-11 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        @if (p.images?.[0]) {<img [src]="p.images![0]" [alt]="p.name" class="w-full h-full object-cover" />}
+                        @else {<span>📦</span>}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="font-semibold text-gray-900 truncate max-w-[200px]">{{ p.name }}</p>
+                        <p class="text-xs text-gray-400 truncate max-w-[200px]">{{ p._id }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold">{{ getCategoryName(p) || '—' }}</span>
+                  </td>
+                  <td class="px-6 py-4 font-bold text-gray-900">{{ p.currency === 'EGP' ? 'EGP ' : '$' }}{{ p.price.toFixed(2) }}</td>
+                  <td class="px-6 py-4">
+                    <span [class]="stockClass(p.stock) + ' px-2.5 py-1 rounded-full text-xs font-bold'">{{ p.stock > 0 ? p.stock + ' in stock' : 'Out of stock' }}</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-1">
+                      <a [routerLink]="['/dashboard/products/edit', p._id]" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">✏️</a>
+                      <button (click)="deleteTarget.set(p)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @if (deleteTarget()) {
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 text-center">
+        <div class="w-12 h-12 bg-red-100 rounded-2xl mx-auto mb-4 flex items-center justify-center text-2xl">⚠️</div>
+        <h3 class="text-lg font-extrabold text-gray-900 mb-2">Delete Product?</h3>
+        <p class="text-sm text-gray-500 mb-6">"<span class="font-semibold text-gray-800">{{ deleteTarget()!.name }}</span>" will be permanently removed.</p>
+        <div class="flex gap-3">
+          <button (click)="deleteTarget.set(null)" [disabled]="isDeleting()"
+            class="flex-1 py-2.5 border border-gray-200 text-gray-700 font-bold text-sm rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50">Cancel</button>
+          <button (click)="confirmDelete()" [disabled]="isDeleting()"
+            class="flex-1 py-2.5 bg-red-600 text-white font-bold text-sm rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50">
+            {{ isDeleting() ? 'Deleting...' : 'Delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (toast()) {
+    <div [class]="'fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-xl text-sm font-medium text-white ' + (toast()!.type === 'error' ? 'bg-red-500' : 'bg-gray-900')">
+      {{ toast()!.message }}
+    </div>
+  }
+  <app-footer />
+</div>

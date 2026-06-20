@@ -1,0 +1,91 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar />
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900">My Addresses</h1>
+      <button (click)="isModalOpen.set(true)"
+        class="inline-flex items-center px-5 py-2.5 bg-black text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-colors shadow-sm">
+        + Add Address
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        @for (i of [1,2]; track i) {
+          <div class="bg-white rounded-2xl border border-gray-100 p-6 animate-pulse h-40"></div>
+        }
+      </div>
+    } @else if (addresses().length === 0) {
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+        <div class="text-5xl mb-4">📍</div>
+        <h3 class="text-xl font-extrabold text-gray-900 mb-3">No addresses saved</h3>
+        <p class="text-gray-500 mb-8">Add a delivery address to speed up checkout.</p>
+        <button (click)="isModalOpen.set(true)"
+          class="inline-flex items-center px-8 py-3.5 bg-black text-white font-extrabold rounded-full hover:bg-gray-800 transition-colors shadow-md">
+          Add Your First Address
+        </button>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        @for (addr of addresses(); track addr._id) {
+          <div class="relative">
+            <app-address-card [address]="addr" [isSelected]="false" />
+            <button (click)="deleteAddress(addr._id)"
+              [disabled]="deletingId() === addr._id"
+              class="absolute top-3 right-3 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center text-red-400 hover:text-red-600 hover:border-red-300 transition-colors shadow-sm text-xs">
+              {{ deletingId() === addr._id ? '...' : '✕' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Add Address Modal -->
+  @if (isModalOpen()) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl w-full max-w-lg p-8 relative shadow-2xl">
+        <button (click)="isModalOpen.set(false)"
+          class="absolute top-6 right-6 text-gray-400 hover:text-black p-2 rounded-full">✕</button>
+        <h2 class="text-2xl font-extrabold text-gray-900 mb-6">Add New Address</h2>
+        @if (error) {
+          <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">{{ error }}</div>
+        }
+        <form (ngSubmit)="addAddress()" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-gray-900 mb-2">Address Alias</label>
+            <input type="text" [(ngModel)]="newAddress.alias" name="alias" required placeholder="Home, Work..."
+              class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black transition-all" />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-900 mb-2">Street Address</label>
+            <input type="text" [(ngModel)]="newAddress.street" name="street" required placeholder="123 Main St"
+              class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black transition-all" />
+          </div>
+          <div class="grid grid-cols-2 gap-5">
+            <div>
+              <label class="block text-sm font-bold text-gray-900 mb-2">City</label>
+              <input type="text" [(ngModel)]="newAddress.city" name="city" required placeholder="Cairo"
+                class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-900 mb-2">Postal Code</label>
+              <input type="text" [(ngModel)]="newAddress.postalCode" name="postalCode" required placeholder="12345"
+                class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black transition-all" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-900 mb-2">Phone</label>
+            <input type="text" [(ngModel)]="newAddress.phone" name="phone" required placeholder="+20 1xx xxx xxxx"
+              class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black transition-all" />
+          </div>
+          <button type="submit" class="w-full bg-black text-white font-extrabold py-4 rounded-full hover:bg-gray-800 shadow-md transition-all">
+            Save Address
+          </button>
+        </form>
+      </div>
+    </div>
+  }
+
+  <app-footer />
+</div>

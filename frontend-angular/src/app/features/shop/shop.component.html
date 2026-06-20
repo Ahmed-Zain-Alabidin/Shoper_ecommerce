@@ -1,0 +1,221 @@
+<div class="min-h-screen bg-[#fafafa] flex flex-col">
+  <app-navbar />
+
+  <!-- Page Header -->
+  <div class="bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 lg:py-14">
+      <nav class="flex items-center gap-2 text-xs font-medium text-gray-400 mb-3">
+        <a routerLink="/" class="hover:text-gray-700 transition-colors">Home</a>
+        <span>/</span>
+        <span class="text-gray-700">Shop</span>
+      </nav>
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-none">Shop All</h1>
+          <p class="mt-2 text-gray-400 text-sm font-medium">
+            {{ isLoading() ? 'Loading collection...' : (pagination().total || products().length) + ' products' }}
+          </p>
+        </div>
+        <button (click)="isMobileFilterOpen.set(true)"
+          class="lg:hidden inline-flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition-colors self-start sm:self-auto">
+          &#8801; Filters
+          @if (activeFilterCount() > 0) {
+            <span class="bg-white text-gray-900 text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
+              {{ activeFilterCount() }}
+            </span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 w-full">
+    <div class="flex gap-6 lg:gap-8">
+
+      <!-- Desktop Sidebar -->
+      <aside class="hidden lg:block w-56 flex-shrink-0">
+        <div class="sticky top-24 bg-white rounded-2xl border border-gray-100 px-5 py-2 shadow-sm">
+          <ng-container *ngTemplateOutlet="filtersTemplate" />
+        </div>
+      </aside>
+
+      <!-- Mobile Filter Drawer -->
+      @if (isMobileFilterOpen()) {
+        <div class="fixed inset-0 z-50 lg:hidden">
+          <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" (click)="isMobileFilterOpen.set(false)"></div>
+          <div class="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <span class="font-extrabold text-gray-900">Filters</span>
+              <button (click)="isMobileFilterOpen.set(false)" class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
+                &#10005;
+              </button>
+            </div>
+            <div class="flex-1 overflow-y-auto px-5 py-2">
+              <ng-container *ngTemplateOutlet="filtersTemplate" />
+            </div>
+            <div class="px-5 py-4 border-t border-gray-100">
+              <button (click)="isMobileFilterOpen.set(false)"
+                class="w-full bg-black text-white py-3.5 rounded-full font-bold hover:bg-gray-800 transition-colors">
+                View Results
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Product Grid -->
+      <div class="flex-1 min-w-0">
+        @if (isLoading()) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
+            @for (i of skeletons; track i) {
+              <div class="bg-gray-50 rounded-3xl overflow-hidden animate-pulse">
+                <div class="m-2 aspect-[4/5] bg-gray-200 rounded-2xl"></div>
+                <div class="px-4 pt-3 pb-4 space-y-2">
+                  <div class="h-2.5 bg-gray-200 rounded w-1/4"></div>
+                  <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div class="h-5 bg-gray-200 rounded w-1/3 mt-2"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (products().length > 0) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-5">
+            @for (product of products(); track product._id) {
+              <app-product-card [product]="product" />
+            }
+          </div>
+
+          <!-- Pagination -->
+          @if (pagination().pages > 1) {
+            <div class="mt-10 md:mt-14 flex justify-center items-center gap-2">
+              <button (click)="setPage(page - 1)" [disabled]="page === 1"
+                class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                &lsaquo;
+              </button>
+              @for (p of pageNumbers(); track p) {
+                <button (click)="setPage(p)"
+                  [class]="p === page
+                    ? 'w-9 h-9 md:w-10 md:h-10 rounded-full text-sm font-bold bg-gray-900 text-white shadow-md'
+                    : 'w-9 h-9 md:w-10 md:h-10 rounded-full text-sm font-bold text-gray-500 hover:bg-gray-100'">
+                  {{ p }}
+                </button>
+              }
+              <button (click)="setPage(page + 1)" [disabled]="page === pagination().pages"
+                class="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                &rsaquo;
+              </button>
+            </div>
+          }
+
+        } @else {
+          <div class="flex flex-col items-center justify-center py-20 text-center px-4">
+            <h3 class="text-lg md:text-xl font-extrabold text-gray-900 mb-2">No products found</h3>
+            <p class="text-gray-400 text-sm max-w-xs mb-5">Nothing matches your current filters. Try broadening your search.</p>
+            <button (click)="resetFilters()"
+              class="px-6 py-2.5 bg-black text-white text-sm font-bold rounded-full hover:bg-gray-800 transition-colors shadow-md">
+              Reset Filters
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <app-footer />
+</div>
+
+<!-- Filters Template -->
+<ng-template #filtersTemplate>
+  <div class="space-y-0">
+
+    <!-- Search -->
+    <div class="border-b border-gray-100 py-4">
+      <p class="text-xs font-bold tracking-[0.12em] uppercase text-gray-500 mb-3">Search</p>
+      <input type="text" [(ngModel)]="search" (ngModelChange)="onSearchChange()" placeholder="Find something..."
+        class="w-full pl-3 pr-4 py-2.5 bg-gray-50 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black transition-all" />
+    </div>
+
+    <!-- Sort -->
+    <div class="border-b border-gray-100 py-4">
+      <p class="text-xs font-bold tracking-[0.12em] uppercase text-gray-500 mb-3">Sort By</p>
+      <div class="space-y-1">
+        @for (opt of sortOptions; track opt.value) {
+          <button (click)="setSort(opt.value)"
+            [class]="sort === opt.value
+              ? 'w-full text-left px-3 py-2 rounded-xl text-sm font-medium bg-gray-900 text-white'
+              : 'w-full text-left px-3 py-2 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all'">
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="border-b border-gray-100 py-4">
+      <p class="text-xs font-bold tracking-[0.12em] uppercase text-gray-500 mb-3">Categories</p>
+      <div class="space-y-1">
+        @for (cat of categories(); track cat._id) {
+          <label class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+            <input type="checkbox" [checked]="isCategorySelected(cat._id)" (change)="toggleCategory(cat._id)"
+              class="w-4 h-4 rounded border-2 border-gray-300 cursor-pointer" />
+            <span class="text-sm font-medium text-gray-600 flex-1">{{ cat.name }}</span>
+          </label>
+        }
+        @if (categories().length === 0) {
+          <p class="text-xs text-gray-400 px-3 py-2">No categories available</p>
+        }
+      </div>
+      @if (selectedCategories.length > 0) {
+        <button (click)="selectedCategories = []; page = 1; fetchProducts()"
+          class="mt-3 w-full text-xs font-semibold text-gray-500 hover:text-gray-900 py-2 border border-gray-200 rounded-lg transition-all">
+          Clear categories ({{ selectedCategories.length }})
+        </button>
+      }
+    </div>
+
+    <!-- Price Range -->
+    <div class="border-b border-gray-100 py-4">
+      <p class="text-xs font-bold tracking-[0.12em] uppercase text-gray-500 mb-3">Price Range</p>
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-sm font-bold text-gray-900">${{ priceMin }}</span>
+        <span class="text-xs text-gray-400 font-medium">to</span>
+        <span class="text-sm font-bold text-gray-900">${{ priceMax }}</span>
+      </div>
+      <input type="range" [min]="0" [max]="1000" [step]="10" [(ngModel)]="priceMin"
+        (ngModelChange)="onPriceChange()" class="w-full mb-2" />
+      <input type="range" [min]="0" [max]="1000" [step]="10" [(ngModel)]="priceMax"
+        (ngModelChange)="onPriceChange()" class="w-full mb-4" />
+      <div class="grid grid-cols-3 gap-2">
+        @for (preset of pricePresets; track preset.label) {
+          <button (click)="setPricePreset(preset.min, preset.max)"
+            [class]="isPricePreset(preset.min, preset.max)
+              ? 'px-2 py-1.5 text-xs font-medium rounded-lg bg-black text-white'
+              : 'px-2 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200'">
+            {{ preset.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Availability -->
+    <div class="py-4">
+      <p class="text-xs font-bold tracking-[0.12em] uppercase text-gray-500 mb-3">Availability</p>
+      <label class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+        <input type="checkbox" [(ngModel)]="inStockOnly" (ngModelChange)="page = 1; fetchProducts()"
+          class="w-4 h-4 rounded border-2 border-gray-300 cursor-pointer" />
+        <span class="text-sm font-medium text-gray-600 flex-1">In Stock Only</span>
+      </label>
+    </div>
+
+    <!-- Clear All -->
+    @if (activeFilterCount() > 0) {
+      <div class="pt-2 pb-4">
+        <button (click)="resetFilters()"
+          class="w-full py-2.5 text-xs font-bold text-gray-500 hover:text-gray-900 border border-gray-200 rounded-xl hover:border-gray-400 transition-all">
+          Clear all filters ({{ activeFilterCount() }})
+        </button>
+      </div>
+    }
+
+  </div>
+</ng-template>

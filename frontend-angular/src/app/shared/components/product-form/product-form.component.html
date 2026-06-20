@@ -1,0 +1,173 @@
+@if (isLoading()) {
+  <div class="flex items-center justify-center py-32">
+    <svg lucideLoader2 class="w-8 h-8 text-gray-400 animate-spin"></svg>
+  </div>
+} @else {
+  <div class="max-w-2xl mx-auto">
+    <button type="button" (click)="goBack()" class="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors mb-6">
+      <svg lucideArrowLeft class="w-4 h-4"></svg>
+      Back to Products
+    </button>
+
+    <div class="mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+        {{ isEdit() ? 'Edit Product' : 'Add New Product' }}
+      </h1>
+      <p class="text-gray-500 mt-1">
+        {{ isEdit() ? 'Update the product details below.' : 'Fill in the details to publish a new product.' }}
+      </p>
+    </div>
+
+    <form (submit)="submit($event)" class="space-y-6">
+      @if (error()) {
+        <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium flex items-start gap-2">
+          <svg lucideX class="w-4 h-4 mt-0.5 flex-shrink-0"></svg>
+          {{ error() }}
+        </div>
+      }
+
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Basic Information</h2>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-900 mb-2">Product Name <span class="text-red-500">*</span></label>
+          <input type="text" required placeholder="e.g. Premium Running Shoes" [ngModel]="form().name" (ngModelChange)="updateForm({ name: $event })" name="name" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black focus:border-black transition-all placeholder-gray-400" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-900 mb-2">Description <span class="text-red-500">*</span></label>
+          <textarea required rows="4" placeholder="Describe the product — materials, features, sizing..." [ngModel]="form().description" (ngModelChange)="updateForm({ description: $event })" name="description" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black focus:border-black transition-all placeholder-gray-400 resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-900 mb-2">Category <span class="text-red-500">*</span></label>
+          <select required [ngModel]="form().category" (ngModelChange)="updateForm({ category: $event })" name="category" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black focus:border-black transition-all text-gray-700">
+            <option value="">Select a category</option>
+            @for (category of categories(); track category._id) {
+              <option [value]="category._id">{{ category.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Pricing &amp; Inventory</h2>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-900 mb-2">Currency <span class="text-red-500">*</span></label>
+          <div class="flex gap-3">
+            <button type="button" (click)="updateForm({ currency: 'USD' })" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all" [class.bg-black]="form().currency === 'USD'" [class.text-white]="form().currency === 'USD'" [class.shadow-md]="form().currency === 'USD'" [class.bg-gray-50]="form().currency !== 'USD'" [class.text-gray-600]="form().currency !== 'USD'" [class.border]="form().currency !== 'USD'" [class.border-gray-200]="form().currency !== 'USD'">$ USD</button>
+            <button type="button" (click)="updateForm({ currency: 'EGP' })" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all" [class.bg-black]="form().currency === 'EGP'" [class.text-white]="form().currency === 'EGP'" [class.shadow-md]="form().currency === 'EGP'" [class.bg-gray-50]="form().currency !== 'EGP'" [class.text-gray-600]="form().currency !== 'EGP'" [class.border]="form().currency !== 'EGP'" [class.border-gray-200]="form().currency !== 'EGP'">EGP</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-900 mb-2">Original Price <span class="text-xs font-normal text-gray-500 ml-1">(optional)</span></label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">{{ form().currency === 'USD' ? '$' : 'EGP' }}</span>
+              <input type="number" min="0" step="0.01" placeholder="0.00" [ngModel]="form().originalPrice" (ngModelChange)="updateForm({ originalPrice: $event })" name="originalPrice" [class.pl-7]="form().currency === 'USD'" [class.pl-12]="form().currency !== 'USD'" class="w-full pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black focus:border-black transition-all placeholder-gray-400" />
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Price before discount</p>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-900 mb-2">Current Price <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">{{ form().currency === 'USD' ? '$' : 'EGP' }}</span>
+              <input type="number" required min="0" step="0.01" placeholder="0.00" [ngModel]="form().price" (ngModelChange)="updateForm({ price: $event })" name="price" [class.pl-7]="form().currency === 'USD'" [class.pl-12]="form().currency !== 'USD'" class="w-full pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black focus:border-black transition-all placeholder-gray-400" />
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Selling price</p>
+          </div>
+        </div>
+
+        @if (discountPreview(); as discount) {
+          <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-bold text-green-800">Discount Applied</p>
+                <p class="text-xs text-green-600 mt-0.5">Save {{ discount.save }}</p>
+              </div>
+              <div class="text-2xl font-extrabold text-green-700">{{ discount.percent }}%</div>
+            </div>
+          </div>
+        }
+
+        <div>
+          <label class="block text-sm font-bold text-gray-900 mb-2">Stock Quantity <span class="text-red-500">*</span></label>
+          <input type="number" required min="0" placeholder="0" [ngModel]="form().stock" (ngModelChange)="updateForm({ stock: $event })" name="stock" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black focus:border-black transition-all placeholder-gray-400" />
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Product Images</h2>
+          <span class="text-xs text-gray-400 font-medium">{{ totalImages() }}/5 images</span>
+        </div>
+
+        @if (totalImages() < 5) {
+          <div
+            (dragover)="$event.preventDefault(); isDragging.set(true)"
+            (dragleave)="isDragging.set(false)"
+            (drop)="onDrop($event)"
+            (click)="openFilePicker()"
+            class="flex flex-col items-center justify-center w-full py-10 border-2 border-dashed rounded-xl cursor-pointer transition-all"
+            [class.border-black]="isDragging()"
+            [class.bg-gray-50]="isDragging()"
+            [class.scale-[1.01]]="isDragging()"
+            [class.border-gray-200]="!isDragging()"
+            [class.hover:border-gray-400]="!isDragging()"
+            [class.hover:bg-gray-50]="!isDragging()"
+          >
+            <svg lucideImagePlus class="w-8 h-8 mb-3 transition-colors" [class.text-black]="isDragging()" [class.text-gray-300]="!isDragging()"></svg>
+            <p class="text-sm font-semibold text-gray-600">{{ isDragging() ? 'Drop images here' : 'Drag & drop images, or click to browse' }}</p>
+            <p class="text-xs text-gray-400 mt-1">PNG, JPG, WEBP — up to 5 images</p>
+            <input #fileInput type="file" multiple accept="image/*" class="hidden" (change)="addFiles($any($event.target).files)" />
+          </div>
+        }
+
+        @if (existingImages().length > 0 || previews().length > 0) {
+          <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+            @for (url of existingImages(); track url; let i = $index) {
+              <div class="relative group aspect-square">
+                <img [src]="url" alt="" class="w-full h-full object-cover rounded-xl border border-gray-100" />
+                <button type="button" (click)="removeExistingImage(i)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                  <svg lucideX class="w-3 h-3"></svg>
+                </button>
+                @if (i === 0) {
+                  <span class="absolute bottom-1 left-1 text-[10px] font-bold bg-black text-white px-1.5 py-0.5 rounded-md">Main</span>
+                }
+              </div>
+            }
+            @for (url of previews(); track url; let i = $index) {
+              <div class="relative group aspect-square">
+                <img [src]="url" alt="" class="w-full h-full object-cover rounded-xl border border-gray-100" />
+                <button type="button" (click)="removeNewFile(i)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                  <svg lucideX class="w-3 h-3"></svg>
+                </button>
+                <span class="absolute bottom-1 left-1 text-[10px] font-bold bg-blue-600 text-white px-1.5 py-0.5 rounded-md">New</span>
+              </div>
+            }
+          </div>
+        }
+
+        @if (isEdit() && imageFiles().length === 0 && existingImages().length > 0) {
+          <p class="text-xs text-gray-400">Existing images will be kept. Upload new ones to replace them.</p>
+        }
+      </div>
+
+      <button type="submit" [disabled]="isSubmitting()" class="w-full flex items-center justify-center gap-2 bg-black text-white font-extrabold py-4 rounded-xl hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed text-sm">
+        @if (isSubmitting()) {
+          <svg lucideLoader2 class="w-4 h-4 animate-spin"></svg>
+          {{ isEdit() ? 'Saving Changes...' : 'Creating Product...' }}
+        } @else {
+          <svg lucideUpload class="w-4 h-4"></svg>
+          {{ isEdit() ? 'Save Changes' : 'Create Product' }}
+        }
+      </button>
+    </form>
+
+    @if (toast(); as toastState) {
+      <app-toast [message]="toastState.message" [type]="toastState.type" (closed)="toast.set(null)" />
+    }
+  </div>
+}

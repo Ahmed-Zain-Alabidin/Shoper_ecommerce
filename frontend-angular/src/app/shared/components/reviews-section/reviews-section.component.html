@@ -1,0 +1,158 @@
+<section class="mt-24 border-t border-gray-100 pt-16">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12">
+    <div>
+      <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Customer Reviews</h2>
+      <p class="text-sm text-gray-400 mt-1">
+        @if (stats().total > 0) {
+          {{ stats().total }} review{{ stats().total !== 1 ? 's' : '' }}
+        } @else {
+          No reviews yet
+        }
+      </p>
+    </div>
+
+    @if (authService.isAuthenticated() && !hasReviewed()) {
+      <button type="button" (click)="openModal()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-colors shadow-sm">
+        <svg lucidePencil class="w-4 h-4"></svg>
+        Write a Review
+      </button>
+    } @else if (authService.isAuthenticated() && hasReviewed()) {
+      <span class="text-sm text-gray-400 font-medium">You've already reviewed this product.</span>
+    } @else if (!authService.isAuthenticated()) {
+      <a routerLink="/login" class="text-sm font-semibold text-blue-600 hover:underline">Sign in to write a review</a>
+    }
+  </div>
+
+  @if (stats().total > 0) {
+    <div class="bg-gray-50 rounded-2xl border border-gray-100 p-6 mb-10 flex flex-col sm:flex-row gap-8 items-center sm:items-start">
+      <div class="flex flex-col items-center flex-shrink-0">
+        <span class="text-6xl font-extrabold text-gray-900 leading-none">{{ stats().average }}</span>
+        <div class="flex items-center gap-0.5 mt-2">
+          @for (star of stars; track star) {
+            <svg
+              lucideStar
+              class="w-5 h-5"
+              [class.text-amber-400]="star <= roundedAverage()"
+              [class.fill-amber-400]="star <= roundedAverage()"
+              [class.text-gray-200]="star > roundedAverage()"
+              [class.fill-gray-200]="star > roundedAverage()"
+            ></svg>
+          }
+        </div>
+        <span class="text-xs text-gray-400 mt-1.5 font-medium">out of 5</span>
+      </div>
+
+      <div class="hidden sm:block w-px bg-gray-200 self-stretch"></div>
+
+      <div class="flex-1 w-full space-y-2.5">
+        @for (star of [5, 4, 3, 2, 1]; track star) {
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-gray-500 w-8 text-right">{{ star }}★</span>
+            <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full bg-amber-400 rounded-full transition-all duration-500" [style.width.%]="breakdownPercent(star)"></div>
+            </div>
+            <span class="text-xs text-gray-400 w-8">{{ breakdownPercent(star) }}%</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      @for (review of reviews(); track review._id) {
+        <div [class.opacity-60]="review._optimistic" [class.pointer-events-none]="review._optimistic">
+          <app-review-card [review]="review" />
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="bg-gray-50 rounded-2xl border border-gray-100 p-16 flex flex-col items-center text-center">
+      <div class="w-16 h-16 bg-white rounded-2xl border border-gray-100 flex items-center justify-center mb-5 shadow-sm">
+        <svg lucideMessageSquare class="w-7 h-7 text-gray-300"></svg>
+      </div>
+      <h3 class="text-lg font-extrabold text-gray-900 mb-2">No reviews yet</h3>
+      <p class="text-sm text-gray-500 max-w-xs mb-6">Be the first to share your thoughts and help others make a decision.</p>
+      @if (authService.isAuthenticated()) {
+        <button type="button" (click)="openModal()" class="inline-flex items-center gap-2 px-6 py-2.5 bg-black text-white text-sm font-bold rounded-full hover:bg-gray-800 transition-colors shadow-sm">
+          <svg lucidePencil class="w-4 h-4"></svg>
+          Write the First Review
+        </button>
+      } @else {
+        <a routerLink="/login" class="text-sm font-semibold text-blue-600 hover:underline">Sign in to write a review</a>
+      }
+    </div>
+  }
+
+  @if (isModalOpen()) {
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <h3 class="text-lg font-extrabold text-gray-900">Write a Review</h3>
+          <button type="button" (click)="closeModal()" class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
+            <svg lucideX class="w-5 h-5"></svg>
+          </button>
+        </div>
+
+        <form (submit)="submitReview($event)" class="p-6 space-y-5">
+          @if (formError()) {
+            <p class="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">{{ formError() }}</p>
+          }
+
+          <div>
+            <label class="block text-sm font-bold text-gray-900 mb-3">Your Rating <span class="text-red-500">*</span></label>
+            <div class="flex items-center gap-1">
+              @for (star of stars; track star) {
+                <button
+                  type="button"
+                  (click)="rating.set(star)"
+                  (mouseenter)="hoveredStar.set(star)"
+                  (mouseleave)="hoveredStar.set(0)"
+                  class="transition-transform hover:scale-110 focus:outline-none"
+                  [attr.aria-label]="'Rate ' + star + ' star' + (star > 1 ? 's' : '')"
+                >
+                  <svg
+                    lucideStar
+                    class="w-7 h-7 transition-colors"
+                    [class.text-amber-400]="star <= activeStarValue()"
+                    [class.fill-amber-400]="star <= activeStarValue()"
+                    [class.text-gray-200]="star > activeStarValue()"
+                    [class.fill-gray-200]="star > activeStarValue()"
+                  ></svg>
+                </button>
+              }
+              @if (rating() > 0) {
+                <span class="ml-2 text-sm font-semibold text-gray-500">{{ ratingLabels[rating()] }}</span>
+              }
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-900 mb-2">Your Review <span class="text-red-500">*</span></label>
+            <textarea
+              rows="4"
+              required
+              placeholder="Share your experience with this product — quality, fit, value..."
+              [ngModel]="comment()"
+              (ngModelChange)="comment.set($event)"
+              name="comment"
+              class="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-black focus:border-black transition-all placeholder-gray-400 resize-none"
+            ></textarea>
+            <p class="text-xs text-gray-400 mt-1.5 text-right">{{ comment().length }} / 500</p>
+          </div>
+
+          <button
+            type="submit"
+            [disabled]="isSubmitting()"
+            class="w-full flex items-center justify-center gap-2 bg-black text-white font-extrabold py-3.5 rounded-xl hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            @if (isSubmitting()) {
+              <svg lucideLoader2 class="w-4 h-4 animate-spin"></svg>
+              Submitting...
+            } @else {
+              Submit Review
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  }
+</section>

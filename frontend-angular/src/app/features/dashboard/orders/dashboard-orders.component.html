@@ -1,0 +1,74 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar />
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900">Orders</h1>
+      <p class="text-gray-500 mt-1">{{ isLoading() ? 'Loading...' : orders().length + ' orders' }}</p>
+    </div>
+
+    @if (isLoading()) {
+      <div class="space-y-3">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="bg-white rounded-2xl border border-gray-100 p-6 animate-pulse h-20"></div>
+        }
+      </div>
+    } @else if (orders().length === 0) {
+      <div class="bg-white rounded-2xl border border-gray-100 p-16 text-center">
+        <div class="text-4xl mb-4">🛍️</div>
+        <p class="font-bold text-gray-500">No orders yet.</p>
+      </div>
+    } @else {
+      <div class="space-y-3">
+        @for (order of orders(); track order._id) {
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex flex-wrap gap-6">
+                <div>
+                  <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Order ID</p>
+                  <p class="font-mono text-sm font-bold text-gray-900">#{{ order._id?.slice(-10).toUpperCase() }}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Date</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ formatDate(order.createdAt) }}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total</p>
+                  <p class="text-sm font-extrabold text-gray-900">${{ order.totalPrice?.toFixed(2) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span [class]="statusClass(order.status) + ' px-3 py-1 rounded-full text-xs font-extrabold capitalize'">{{ order.status }}</span>
+                <button (click)="toggle(order._id)"
+                  class="flex items-center text-xs font-bold text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors">
+                  {{ expanded() === order._id ? '▲ Hide' : '▼ Details' }}
+                </button>
+              </div>
+            </div>
+            @if (expanded() === order._id) {
+              <div class="border-t border-gray-100 bg-gray-50 px-6 py-4">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Items</p>
+                <div class="space-y-2">
+                  @for (item of getItems(order); track $index) {
+                    <div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100">
+                      <div class="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        @if ((item.product || item).images?.[0]) {
+                          <img [src]="(item.product || item).images[0]" class="w-full h-full object-cover" />
+                        } @else { <span>📦</span> }
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 truncate">{{ (item.product || item).name || 'Product' }}</p>
+                        <p class="text-xs text-gray-500">Qty: {{ item.quantity }}</p>
+                      </div>
+                      <p class="text-sm font-bold text-gray-900">${{ itemPrice(item).toFixed(2) }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <app-footer />
+</div>
